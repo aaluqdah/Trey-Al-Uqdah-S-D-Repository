@@ -7,12 +7,13 @@ This repository contains a modular Python-based system for forecasting oil marke
 ## Project Structure
 
 The model is split into dedicated Jupyter notebooks for each key component of the petroleum market:
+**RUN FILES IN ORDER**
 
+- `Production.ipynb` – U.S. crude production forecast  
 - `Gasoline.ipynb` – Gasoline demand
 - `Diesel.ipynb` – Diesel (distillate) fuel demand  
 - `HeatingOil.ipynb` – Heating oil demand
 - `JetFuel.ipynb` – Jet fuel demand 
-- `Production.ipynb` – U.S. crude production forecast  
 - `Imports.ipynb` – Crude imports forecast 
 - `Exports.ipynb` – Crude exports forecast  
 - `Refinery.ipynb` – Refinery Crude demand 
