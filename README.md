@@ -17,7 +17,7 @@ The model is split into dedicated Jupyter notebooks for each key component of th
 - `Imports.ipynb` – Crude imports forecast 
 - `Exports.ipynb` – Crude exports forecast  
 - `Refinery.ipynb` – Refinery Crude demand 
-- `S&D.ipynb` – Final model output: Demand (Consumption + Epxports) & Supply (Production + Imports)
+- `S&D.ipynb` – Final model output: Demand (Consumption + Exports) & Supply (Production + Imports)
 
 ---
 
