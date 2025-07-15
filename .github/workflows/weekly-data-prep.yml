@@ -1,0 +1,63 @@
+name: Weekly Data Preparation
+
+on:
+  schedule:
+    # Runs every Monday at 08:00 AM UTC
+    - cron: '0 8 * * 1'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Production.py
+        run: python Production.py
+
+      - name: Run Gasoline.py
+        run: python Gasoline.py
+
+      - name: Run Diesel.py
+        run: python Diesel.py
+
+      - name: Run HeatingOil.py
+        run: python HeatingOil.py
+
+      - name: Run JetFuel.py
+        run: python JetFuel.py
+
+      - name: Run Imports.py
+        run: python Imports.py
+
+      - name: Run Exports.py
+        run: python Exports.py
+
+      - name: Run Refinery.py
+        run: python Refinery.py
+
+      - name: Run run.py
+        run: python run.py
+
+      # Note: SD.py is NOT run here, app runs it separately.
+
+      - name: Commit and push updated df_merged2.csv
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add df_merged2.csv
+          git commit -m "Update df_merged2.csv - weekly data prep"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
