@@ -5,14 +5,6 @@ import matplotlib.dates as mdates
 from dateutil.relativedelta import relativedelta
 
 # === IMPORT ALL SCRIPT FUNCTIONS ===
-from Production import main as run_production
-from Gasoline import main as run_gasoline
-from Diesel import main as run_diesel
-from HeatingOil import main as run_heatingoil
-from JetFuel import main as run_jetfuel
-from Imports import main as run_imports
-from Exports import main as run_exports
-from Refinery import main as run_refinery
 from SD import main as run_sd  # Rename S&D.ipynb to SD.py
 
 # === STREAMLIT CONFIG ===
@@ -22,14 +14,6 @@ st.title("Oil Supply & Demand Forecasting Dashboard")
 # === RUN SCRIPTS ===
 @st.cache_resource(show_spinner=False)
 def run_scripts():
-    run_production()
-    run_gasoline()
-    run_diesel()
-    run_heatingoil()
-    run_jetfuel()
-    run_imports()
-    run_exports()
-    run_refinery()
     run_sd()
     return True
 
@@ -51,7 +35,7 @@ st.dataframe(df_merged2[["ds", "Supply", "Demand", "Spread"]].tail(12), use_cont
 
 # === PLOT 1: Spread + Stock Change + WTI ===
 st.subheader("Spread and Stock Change vs WTI")
-df = df_merged2.copy()
+df = pd.read_csv('df_merged2.csv')
 df["ds"] = pd.to_datetime(df["ds"])
 df = df[df["ds"] >= "2020-01-01"].dropna(subset=["WTI", "Spread", "Stock Change"])
 df["WTI"] = pd.to_numeric(df["WTI"], errors="coerce")
@@ -100,7 +84,7 @@ st.pyplot(fig)
 
 # === PLOT 2: Forecasted Supply and Demand ===
 st.subheader("U.S. WTI Crude Supply S&D Balance Forecast")
-df = df_merged2.copy()
+df = pd.read_csv('df_merged2.csv')
 df['ds'] = pd.to_datetime(df['ds'])
 last_date = df['ds'].max()
 start_date = last_date - pd.DateOffset(months=23)
@@ -137,7 +121,7 @@ st.pyplot(fig2)
 
 # === PLOT 3: Inventory and Stock Change ===
 st.subheader("Inventory and Stock Change")
-df = df_merged2.copy()
+df = pd.read_csv('df_merged2.csv')
 df['ds'] = pd.to_datetime(df['ds'])
 end_date = df['ds'].max()
 start_date = end_date - relativedelta(months=23)
