@@ -4,7 +4,10 @@ on:
   workflow_dispatch:    # Enables manual triggering
   schedule:
     - cron: '0 8 * * 1'  # Every Monday at 08:00 AM UTC
-
+    
+permissions:
+  contents: write 
+  
 jobs:
   build:
     runs-on: ubuntu-latest
