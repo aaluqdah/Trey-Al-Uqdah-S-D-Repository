@@ -5,7 +5,7 @@ import subprocess
 notebooks = [
     "Production.ipynb", "Gasoline.ipynb", "Diesel.ipynb",
     "HeatingOil.ipynb", "JetFuel.ipynb", "Imports.ipynb",
-    "Exports.ipynb", "Refinery.ipynb", "SD.ipynb"
+    "Exports.ipynb", "Refinery.ipynb", "SD.ipynb", "run.ipynb"
 ]
 
 for nb in notebooks:

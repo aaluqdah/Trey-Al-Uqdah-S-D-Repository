@@ -3,7 +3,7 @@ import os
 # List your converted script files here
 files_to_wrap = [
     "Production.py", "Gasoline.py", "Diesel.py", "HeatingOil.py", "JetFuel.py",
-    "Imports.py", "Exports.py", "Refinery.py", "SD.py"
+    "Imports.py", "Exports.py", "Refinery.py", "SD.py", "run.py"
 ]
 
 def wrap_file(filename):
