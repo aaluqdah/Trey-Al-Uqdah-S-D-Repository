@@ -2,8 +2,8 @@ name: Weekly Data Preparation
 
 on:
   schedule:
-    # Runs every Monday at 08:00 AM UTC
-    - cron: '0 8 * * 1'
+    # Runs every Tuesday at 01:45 AM UTC
+    - cron: '45 1 * * 2'
 
 jobs:
   build:
@@ -61,3 +61,4 @@ jobs:
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
