@@ -3,47 +3,53 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from dateutil.relativedelta import relativedelta
-import nbformat
-from nbconvert.preprocessors import ExecutePreprocessor
 
+# === IMPORT ALL SCRIPT FUNCTIONS ===
+from Production import main as run_production
+from Gasoline import main as run_gasoline
+from Diesel import main as run_diesel
+from HeatingOil import main as run_heatingoil
+from JetFuel import main as run_jetfuel
+from Imports import main as run_imports
+from Exports import main as run_exports
+from Refinery import main as run_refinery
+from SD import main as run_sd  # Rename S&D.ipynb to SD.py
+
+# === STREAMLIT CONFIG ===
 st.set_page_config(page_title="Oil S&D Dashboard", layout="wide")
 st.title("Oil Supply & Demand Forecasting Dashboard")
 
-# Notebooks to run
-notebooks = [
-    "Production.ipynb", "Gasoline.ipynb", "Diesel.ipynb",
-    "HeatingOil.ipynb", "JetFuel.ipynb", "Imports.ipynb",
-    "Exports.ipynb", "Refinery.ipynb", "S&D.ipynb"
-]
-
+# === RUN SCRIPTS ===
 @st.cache_resource(show_spinner=False)
-def run_notebooks():
-    for path in notebooks:
-        with open(path) as f:
-            nb = nbformat.read(f, as_version=4)
-            ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
-            ep.preprocess(nb, {'metadata': {'path': '.'}})
+def run_scripts():
+    run_production()
+    run_gasoline()
+    run_diesel()
+    run_heatingoil()
+    run_jetfuel()
+    run_imports()
+    run_exports()
+    run_refinery()
+    run_sd()
     return True
-
 
 @st.cache_data(show_spinner=False)
 def load_df():
     return pd.read_csv("df_merged2.csv", parse_dates=["ds"])
 
-
 with st.spinner("Running full model pipeline..."):
-    run_notebooks()
+    run_scripts()
     df_merged2 = load_df()
 
 if df_merged2 is None:
-    st.error("Could not load df_merged2. Make sure it's defined in S&D.ipynb.")
+    st.error("Could not load df_merged2. Make sure it's defined in SD.py.")
     st.stop()
 
-# Show Forecast Output Table
+# === FORECAST TABLE ===
 st.subheader("Forecast Table")
 st.dataframe(df_merged2[["ds", "Supply", "Demand", "Spread"]].tail(12), use_container_width=True)
 
-# Plot 1: Spread + Stock Change + WTI
+# === PLOT 1: Spread + Stock Change + WTI ===
 st.subheader("Spread and Stock Change vs WTI")
 df = df_merged2.copy()
 df["ds"] = pd.to_datetime(df["ds"])
@@ -92,7 +98,7 @@ plt.xticks(rotation=0)
 plt.tight_layout()
 st.pyplot(fig)
 
-# Plot 2: Forecasted Supply and Demand
+# === PLOT 2: Forecasted Supply and Demand ===
 st.subheader("U.S. WTI Crude Supply S&D Balance Forecast")
 df = df_merged2.copy()
 df['ds'] = pd.to_datetime(df['ds'])
@@ -129,7 +135,7 @@ plt.tight_layout()
 plt.xlim([x_start, x_end])
 st.pyplot(fig2)
 
-# Plot 3: Stocks and Stock Change
+# === PLOT 3: Inventory and Stock Change ===
 st.subheader("Inventory and Stock Change")
 df = df_merged2.copy()
 df['ds'] = pd.to_datetime(df['ds'])
@@ -155,3 +161,4 @@ plt.setp(ax1.get_xticklabels(), rotation=45, ha='right')
 ax1.set_xlim([start_date, end_date + relativedelta(months=0)])
 fig3.tight_layout()
 st.pyplot(fig3)
+
