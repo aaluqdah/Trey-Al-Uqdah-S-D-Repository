@@ -1,8 +1,13 @@
-import streamlit as st
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from dateutil.relativedelta import relativedelta
+
+import streamlit as st
+st.cache_data.clear()
+st.cache_resource.clear()
+
 
 # === IMPORT ALL SCRIPT FUNCTIONS ===
 from SD import main as run_sd  # Rename S&D.ipynb to SD.py
