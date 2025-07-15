@@ -6,3 +6,6 @@ yfinance
 python-dateutil
 scikit-learn
 xgboost
+streamlit
+nbconvert
+nbformat
