@@ -1,0 +1,208 @@
+def main():
+    #!/usr/bin/env python
+    # coding: utf-8
+
+    # In[2]:
+
+
+    import requests
+    import pandas as pd
+    import numpy as np
+    import yfinance as yf
+    import pandas as pd
+    from datetime import datetime, timedelta
+    from dateutil.relativedelta import relativedelta
+    import matplotlib.pyplot as plt
+    from xgboost import XGBRegressor
+    from sklearn.metrics import mean_squared_error, mean_absolute_error
+
+
+    # In[4]:
+
+
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    import matplotlib.dates as mdates
+    from dateutil.relativedelta import relativedelta
+
+    df_merged = pd.read_csv('df_merged2.csv')
+
+    # Ensure datetime and sort
+    df_merged['ds'] = pd.to_datetime(df_merged['ds'])
+    df_merged = df_merged.sort_values('ds')
+
+    # Filter last 24 months
+    last_date = df_merged['ds'].max()
+    start_date = last_date - pd.DateOffset(months=23)
+    df_recent = df_merged[df_merged['ds'] >= start_date].copy()
+
+    # Separate historical and forecast (last 3 points)
+    hist = df_recent.iloc[:-3].copy()
+    fcast = df_recent.iloc[-3:].copy()
+
+    # Extend forecast data by prepending last historical value
+    fcast_supply = pd.concat([
+        hist[['ds', 'Supply']].iloc[[-1]],
+        fcast[['ds', 'Supply']]
+    ])
+    fcast_demand = pd.concat([
+        hist[['ds', 'Demand']].iloc[[-1]],
+        fcast[['ds', 'Demand']]
+    ])
+
+    # Define x-axis limits
+    x_start = df_recent['ds'].min()
+    x_end = df_recent['ds'].max() + relativedelta(months=1)
+
+    # Plotting
+    plt.figure(figsize=(12, 6))
+
+    plt.plot(hist['ds'], hist['Supply'], color='red', label='Supply')
+    plt.plot(hist['ds'], hist['Demand'], color='blue', label='Demand')
+
+    # Connected forecast lines
+    plt.plot(fcast_supply['ds'], fcast_supply['Supply'], color='red', linestyle='--', marker='o', label='Forecasted Supply')
+    plt.plot(fcast_demand['ds'], fcast_demand['Demand'], color='blue', linestyle='--', marker='o', label='Forecasted Demand')
+
+    # Forecast start marker
+    plt.axvline(x=fcast['ds'].iloc[0], color='gray', linestyle=':', label='Forecast Start')
+
+    # Format x-axis
+    plt.gca().xaxis.set_major_locator(mdates.MonthLocator(interval=1))
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+    plt.xticks(rotation=45)
+
+    # Expand y-axis range for smoother lines
+    all_vals = pd.concat([df_recent['Supply'], df_recent['Demand']])
+    ymin, ymax = all_vals.min(), all_vals.max()
+    plt.ylim(ymin - 0.5 * (ymax - ymin), ymax + 0.5 * (ymax - ymin))
+
+    # Final touches
+    plt.title('U.S. Crude Oil Supply and Demand')
+    plt.xlabel('Date')
+    plt.ylabel('Volume (MBBL/D)')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.xlim([x_start, x_end])
+    plt.show()
+
+    # === Assume df_merged and 'ds' already exist ===
+    df = df_merged.copy()
+    df['ds'] = pd.to_datetime(df['ds'])
+
+    # === Set start and end window ===
+    end_date = df['ds'].max()
+    start_date = end_date - relativedelta(months=23)
+    df = df[(df['ds'] >= start_date) & (df['ds'] <= end_date)]
+
+
+    # === Create Plot ===
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+
+    # === Line plot for Stocks ===
+    ax1.plot(df['ds'], df['Stocks'], color='blue', label='Stocks', linewidth=2.5)
+    ax1.set_ylabel("Stocks (MMBBL)", color="black")
+    ax1.tick_params(axis="y", labelcolor="black")
+    ax1.set_title("Stocks and Monthly Stock Change")
+    ax1.grid(True)
+
+    # === Bar plot for Stock Change ===
+    ax2 = ax1.twinx()
+    bar_colors = df["Stock Change"].apply(lambda x: 'green' if pd.notna(x) and x >= 0 else 'red')
+    ax2.bar(df["ds"], df["Stock Change"], color=bar_colors, width=20, alpha=0.5, label="Stock Change")
+    ax2.set_ylabel("Stock Change (MBBL/D)", color="gray")
+    ax2.tick_params(axis="y", labelcolor="gray")
+
+    # === Fix x-axis: show all dates ===
+    ax1.set_xticks(df['ds'])  # Ensure all dates show
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))  # Format as Year-Month
+    plt.setp(ax1.get_xticklabels(), rotation=45, ha='right')  # Rotate for clarity
+
+
+    # === Extend x-axis range ===
+    end_date = df["ds"].max()
+    start_date = end_date - relativedelta(months=23)
+    extended_end = end_date + relativedelta(months=0)
+
+    # Apply updated range AFTER plotting
+    ax1.set_xlim([start_date, extended_end])
+    # === Layout ===
+    fig.tight_layout()
+    plt.show()
+
+
+    # In[5]:
+
+
+    import matplotlib.pyplot as plt
+    import matplotlib.dates as mdates
+    import pandas as pd
+    from dateutil.relativedelta import relativedelta
+
+    # === Prepare Data ===
+    df = pd.read_csv('df_merged2.csv')
+    df["ds"] = pd.to_datetime(df["ds"])
+    df = df[df["ds"] >= "2020-01-01"]
+    df = df.dropna(subset=["WTI", "Spread", "Stock Change"])
+    df["WTI"] = pd.to_numeric(df["WTI"], errors="coerce")
+
+    # === Compute Axis Ranges ===
+    spread_min, spread_max = df["Spread"].min(), df["Spread"].max()
+    change_min, change_max = df["Stock Change"].min(), df["Stock Change"].max()
+
+    spread_zero_pos = abs(spread_min) / (spread_max - spread_min)
+    change_zero_pos = abs(change_min) / (change_max - change_min)
+    target_zero_pos = max(spread_zero_pos, change_zero_pos)
+
+    spread_total_range = spread_max / (1 - target_zero_pos)
+    change_total_range = change_max / (1 - target_zero_pos)
+
+    spread_ylim = [-spread_total_range * target_zero_pos, spread_total_range * (1 - target_zero_pos)]
+    change_ylim = [-change_total_range * target_zero_pos, change_total_range * (1 - target_zero_pos)]
+
+    # === Define Date Range ===
+    start = df["ds"].min()
+    end = df["ds"].max() + relativedelta(months=1)
+
+    # === Create Subplots with Shared X-Axis ===
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10), sharex=True)
+
+    # === Subplot 1: Spread + Stock Change ===
+    ax1.plot(df["ds"], df["Spread"], color="blue", linewidth=2, label="Spread")
+    ax1.set_ylabel("Spread", color="blue")
+    ax1.tick_params(axis="y", labelcolor="blue")
+    ax1.set_ylim(spread_ylim)
+    ax1.set_title("Spread and Monthly Stock Change Since 2020")
+    ax1.grid(True)
+
+    ax1b = ax1.twinx()
+    bar_colors = df["Stock Change"].apply(lambda x: "green" if x >= 0 else "red")
+    ax1b.bar(df["ds"], df["Stock Change"], color=bar_colors, width=20, alpha=0.5)
+    ax1b.set_ylabel("Stock Change", color="gray")
+    ax1b.tick_params(axis="y", labelcolor="gray")
+    ax1b.set_ylim(change_ylim)
+
+    # === Subplot 2: WTI Price ===
+    ax2.plot(df["ds"], df["WTI"], color="orange", linewidth=2, label="WTI Price")
+    ax2.set_ylabel("Price (USD/barrel)")
+    ax2.set_title("WTI Crude Oil Price Since 2020")
+    ax2.grid(True)
+    ax2.legend()
+
+    # === Shared X-axis formatting ===
+    ax2.set_xlim([start, end])
+    locator = mdates.YearLocator()
+    formatter = mdates.DateFormatter('%Y')
+    ax2.xaxis.set_major_locator(locator)
+    ax2.xaxis.set_major_formatter(formatter)
+    plt.xticks(rotation=0)
+
+    # === Final Layout ===
+    plt.tight_layout()
+    plt.show()
+
+
+
+if __name__ == "__main__":
+    main()
